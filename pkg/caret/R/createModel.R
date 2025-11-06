@@ -13,7 +13,7 @@
 "createModel" <-function(x, y, wts, method, tuneValue, obsLevels, pp = NULL, last = FALSE, sampling = NULL, classProbs, ...) {
 
   ## To get of warnings "some row.names duplicated: " when resampling with replacement
-  if(is.data.frame(x) | is.matrix(x)) 
+  if(is.data.frame(x) | is.matrix(x))
     rownames(x) <- make.names(rownames(x), unique = TRUE)
 
   if(!is.null(sampling) && sampling$first) {
@@ -53,12 +53,21 @@
   if(is.null(method$label)) method$label <- ""
   if(!isS4(modelFit) &
        !(method$label %in% c("Ensemble Partial Least Squares Regression",
-                             "Ensemble Partial Least Squares Regression with Feature Selection"))) {
+                             "Ensemble Partial Least Squares Regression with Feature Selection")) &
+     !is(modelFit, "xgb.Booster")) {
     modelFit$xNames <- colnames(x)
     modelFit$problemType <- if(is.factor(y)) "Classification" else "Regression"
     modelFit$tuneValue <- tuneValue
     modelFit$obsLevels <- obsLevels
     modelFit$param <- list(...)
+  }
+
+  if(is(modelFit, "xgb.Booster")) {
+    attr(modelFit, "xNames") <- colnames(x)
+    attr(modelFit, "problemType") <- if(is.factor(y)) "Classification" else "Regression"
+    attr(modelFit, "tuneValue") <- tuneValue
+    attr(modelFit, "obsLevels") <- obsLevels
+    attr(modelFit, "param") <- list(...)
   }
 
   list(fit = modelFit, preProc = ppObj)

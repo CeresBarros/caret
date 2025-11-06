@@ -129,14 +129,14 @@ modelInfo <- list(label = "eXtreme Gradient Boosting",
                       newdata <- xgboost::xgb.DMatrix(data=newdata, missing = NA)
                     }
                    out <- predict(modelFit, newdata)
-                    if(modelFit$problemType == "Classification") {
-                      if(length(modelFit$obsLevels) == 2) {
+                    if(attr(modelFit, "problemType") == "Classification") {
+                      if(length(attr(modelFit, "obsLevels")) == 2) {
                         out <- ifelse(out >= .5,
-                                      modelFit$obsLevels[1],
-                                      modelFit$obsLevels[2])
+                                      attr(modelFit, "obsLevels")[1],
+                                      attr(modelFit, "obsLevels")[2])
                       } else {
-                        out <- matrix(out, ncol = length(modelFit$obsLevels), byrow = TRUE)
-                        out <- modelFit$obsLevels[apply(out, 1, which.max)]
+                        out <- matrix(out, ncol = length(attr(modelFit, "obsLevels")), byrow = TRUE)
+                        out <- attr(modelFit, "obsLevels")[apply(out, 1, which.max)]
                       }
                     }
 
@@ -145,14 +145,14 @@ modelInfo <- list(label = "eXtreme Gradient Boosting",
                       tmp[[1]] <- out
                       for(j in seq(along = submodels$nrounds)) {
                         tmp_pred <- predict(modelFit, newdata, ntreelimit = submodels$nrounds[j])
-                        if(modelFit$problemType == "Classification") {
-                          if(length(modelFit$obsLevels) == 2) {
+                        if(attr(modelFit, "problemType") == "Classification") {
+                          if(length(attr(modelFit, "obsLevels")) == 2) {
                             tmp_pred <- ifelse(tmp_pred >= .5,
-                                               modelFit$obsLevels[1],
-                                               modelFit$obsLevels[2])
+                                               attr(modelFit, "obsLevels")[1],
+                                               attr(modelFit, "obsLevels")[2])
                           } else {
-                            tmp_pred <- matrix(tmp_pred, ncol = length(modelFit$obsLevels), byrow = TRUE)
-                            tmp_pred <- modelFit$obsLevels[apply(tmp_pred, 1, which.max)]
+                            tmp_pred <- matrix(tmp_pred, ncol = length(attr(modelFit, "obsLevels")), byrow = TRUE)
+                            tmp_pred <- attr(modelFit, "obsLevels")[apply(tmp_pred, 1, which.max)]
                           }
                         }
                         tmp[[j+1]]  <- tmp_pred
@@ -167,18 +167,18 @@ modelInfo <- list(label = "eXtreme Gradient Boosting",
                       newdata <- xgboost::xgb.DMatrix(data=newdata, missing = NA)
                     }
 
-                    if( !is.null(modelFit$param$objective) && modelFit$param$objective == 'binary:logitraw'){
+                    if( !is.null(attr(modelFit, "param")$objective) && attr(modelFit, "param")$objective == 'binary:logitraw'){
                       p <- predict(modelFit, newdata)
                       out <-binomial()$linkinv(p) # exp(p)/(1+exp(p))
                     } else {
                       out <- predict(modelFit, newdata)
                     }
-                   if(length(modelFit$obsLevels) == 2) {
+                   if(length(attr(modelFit, "obsLevels")) == 2) {
                      out <- cbind(out, 1 - out)
-                      colnames(out) <- modelFit$obsLevels
+                      colnames(out) <- attr(modelFit, "obsLevels")
                     } else {
-                      out <- matrix(out, ncol = length(modelFit$obsLevels), byrow = TRUE)
-                      colnames(out) <- modelFit$obsLevels
+                      out <- matrix(out, ncol = length(attr(modelFit, "obsLevels")), byrow = TRUE)
+                      colnames(out) <- attr(modelFit, "obsLevels")
                     }
                     out <- as.data.frame(out, stringsAsFactors = TRUE)
 
@@ -187,12 +187,12 @@ modelInfo <- list(label = "eXtreme Gradient Boosting",
                       tmp[[1]] <- out
                       for(j in seq(along = submodels$nrounds)) {
                         tmp_pred <- predict(modelFit, newdata, ntreelimit = submodels$nrounds[j])
-                        if(length(modelFit$obsLevels) == 2) {
+                        if(length(attr(modelFit, "obsLevels")) == 2) {
                           tmp_pred <- cbind(tmp_pred, 1 - tmp_pred)
-                          colnames(tmp_pred) <- modelFit$obsLevels
+                          colnames(tmp_pred) <- attr(modelFit, "obsLevels")
                         } else {
-                          tmp_pred <- matrix(tmp_pred, ncol = length(modelFit$obsLevels), byrow = TRUE)
-                          colnames(tmp_pred) <- modelFit$obsLevels
+                          tmp_pred <- matrix(tmp_pred, ncol = length(attr(modelFit, "obsLevels")), byrow = TRUE)
+                          colnames(tmp_pred) <- attr(modelFit, "obsLevels")
                         }
                         tmp_pred <- as.data.frame(tmp_pred, stringsAsFactors = TRUE)
                         tmp[[j+1]]  <- tmp_pred
@@ -202,8 +202,8 @@ modelInfo <- list(label = "eXtreme Gradient Boosting",
                     out
                   },
                   predictors = function(x, ...) {
-                    imp <- xgboost::xgb.importance(x$xNames, model = x)
-                    x$xNames[x$xNames %in% imp$Feature]
+                    imp <- xgboost::xgb.importance(attr(x, "xNames"), model = x)
+                    attr(x, "xNames")[attr(x, "xNames") %in% imp$Feature]
                   },
                   varImp = function(object, numTrees = NULL, ...) {
                     imp <- xgboost::xgb.importance(object$xNames, model = object)
@@ -219,7 +219,7 @@ modelInfo <- list(label = "eXtreme Gradient Boosting",
 
                     imp
                   },
-                  levels = function(x) x$obsLevels,
+                  levels = function(x) attr(x, "obsLevels"),
                   tags = c("Tree-Based Model", "Boosting", "Ensemble Model", "Implicit Feature Selection", "Accepts Case Weights"),
                   sort = function(x) {
                     # This is a toss-up, but the # trees probably adds
