@@ -71,10 +71,10 @@ modelInfo <- list(label = "eXtreme Gradient Boosting",
                                                        gamma = param$gamma,
                                                        colsample_bytree = param$colsample_bytree,
                                                        min_child_weight = param$min_child_weight,
-                                                       subsample = param$subsample),
+                                                       subsample = param$subsample,
+                                                       objective = "binary:logistic"),
                                                   data = x,
                                                   nrounds = param$nrounds,
-                                                  objective = "binary:logistic",
                                                   ...)
                       } else {
 
@@ -92,11 +92,11 @@ modelInfo <- list(label = "eXtreme Gradient Boosting",
                                                        gamma = param$gamma,
                                                        colsample_bytree = param$colsample_bytree,
                                                        min_child_weight = param$min_child_weight,
-                                                       subsample = param$subsample),
+                                                       subsample = param$subsample,
+                                                       objective = "multi:softprob"),
                                                        data = x,
                                                        num_class = length(lev),
                                                        nrounds = param$nrounds,
-                                                       objective = "multi:softprob",
                                                        ...)
                       }
                     } else {
@@ -113,10 +113,10 @@ modelInfo <- list(label = "eXtreme Gradient Boosting",
                                                      gamma = param$gamma,
                                                      colsample_bytree = param$colsample_bytree,
                                                      min_child_weight = param$min_child_weight,
-                                                     subsample = param$subsample),
+                                                     subsample = param$subsample,
+                                                     objective = "reg:squarederror"),
                                                  data = x,
                                                  nrounds = param$nrounds,
-                                                 objective = "reg:squarederror",
                                                  ...)
                     }
                     out
@@ -169,7 +169,7 @@ modelInfo <- list(label = "eXtreme Gradient Boosting",
 
                     if( !is.null(attr(modelFit, "param")$objective) && attr(modelFit, "param")$objective == 'binary:logitraw'){
                       p <- predict(modelFit, newdata)
-                      out <-binomial()$linkinv(p) # exp(p)/(1+exp(p))
+                      out <- binomial()$linkinv(p) # exp(p)/(1+exp(p))
                     } else {
                       out <- predict(modelFit, newdata)
                     }
